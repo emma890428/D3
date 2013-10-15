@@ -8,7 +8,7 @@
 			}
 
 			path {
-				stroke: steelblue;
+				stroke:steelblue;
 				stroke-width: 2;
 				fill:none;
 			}
@@ -35,7 +35,7 @@
 			}
 
 			text.shadow {
-				stroke: white;
+				stroke: lightgrey;
 				stroke-width: 3;
 				opacity: 0.9;
 			}
@@ -46,7 +46,7 @@
 		<script type="text/javascript">
 			var margin = {
 				top: 30,
-				right: 20,
+				right: 50,
 				bottom: 30,
 				left: 50
 			},
@@ -56,22 +56,30 @@
 			var parseDate = d3.time.format("%d-%b-%y").parse;
 
 			var x = d3.time.scale().range([0, width]);
-			var y = d3.scale.linear().range([height, 0]);
+			var y0 = d3.scale.linear().range([height, 0]);
+			var y1 = d3.scale.linear().range([height, 0]);
 
 			var xAxis = d3.svg.axis().scale(x)
 				.orient("bottom").ticks(5);
-			var yAxis = d3.svg.axis().scale(y)
+			var yAxisLeft = d3.svg.axis().scale(y0)
 				.orient("left").ticks(5);
+			var yAxisRight = d3.svg.axis().scale(y1)
+				.orient("right").ticks(5);
 
-			var area = d3.svg.area()
-				.x(function(d){return x(d.date);})
-				.y0(height)
-				.y1(function(d){return y(d.close);});
+			// var area = d3.svg.area()
+			// 	.x(function(d){return x(d.date);})
+			// 	.y0(height)
+			// 	.y1(function(d){return y(d.close);});
 
 			var valueline = d3.svg.line()
 				.interpolate("linear")
 				.x(function(d) {return x(d.date);})
-				.y(function(d) {return y(d.close);});
+				.y(function(d) {return y0(d.close);});
+
+			var valueline2 = d3.svg.line()
+				.interpolate("linear")
+				.x(function(d) {return x(d.date);})
+				.y(function(d) {return y1(d.open);});
 
 			var svg = d3.select("body").append("svg")
 					.attr("width", width + margin.left + margin.right)
@@ -86,30 +94,37 @@
 					.ticks(5);
 			}
 
-			var make_y_axis = function(){
-				return d3.svg.axis()
-				.scale(y)
-				.orient("left")
-				.ticks(5)
-			};
+			// var make_y_axis = function(){
+			// 	return d3.svg.axis()
+			// 	.scale(y0)
+			// 	.orient("left")
+			// 	.ticks(5)
+			// };
 
-			d3.tsv("data/data.tsv", function(data) {
+			d3.tsv("data/data2.tsv", function(data) {
 				data.forEach(function(d){
 					d.date = parseDate(d.date);
 					d.close = +d.close;
+					d.open = +d.open;
 				});
 
 				x.domain(d3.extent(data, function(d) {return d.date;}));
-				y.domain([0, d3.max(data, function(d) {return d.close;})]);
+				y0.domain([0, d3.max(data, function(d) {return d.close;})]);
+				y1.domain([0, d3.max(data, function(d) {return d.open;})]);
 
-				svg.append("path")
-					.datum(data)
-					.attr("class", "area")
-					.attr("d", area);
+				// svg.append("path")
+				// 	.datum(data)
+				// 	.attr("class", "area")
+				// 	.attr("d", area);
 
 				svg.append("path")
 					.attr("class", "line")
 					.attr("d", valueline(data));
+
+				svg.append("path")
+					.attr("class", "line")
+					.style("stroke", "red")
+					.attr("d", valueline2(data));
 
 				svg.append("g")
 					.attr("class", "x axis")
@@ -123,7 +138,14 @@
 
 				svg.append("g")
 					.attr("class", "y axis")
-					.call(yAxis);
+					.style("fill", "steelblue")
+					.call(yAxisLeft);
+
+				svg.append("g")
+					.attr("class", "y axis")
+					.attr("transform", "translate(" + width + ", 0)")
+					.style("fill", "red")
+					.call(yAxisRight);
 
 				svg.append("text")
 			        .attr("transform", "rotate(-90)")
@@ -131,11 +153,19 @@
 			        .attr("x", 0 - (height / 2))
 			        .attr("dy", "1em")
 			        .style("text-anchor", "middle")
-			        .text("Value");
+			        .text("Close");
+
+			    svg.append("text")
+			    	.attr("transform", "rotate(90)")
+			    	.attr("x", (height/2))
+			    	.attr("y", (-width - margin.right/2))
+			    	.attr("dy", "-0.5em")
+			    	.style("text-anchor", "middle")
+			    	.text("Open");
 
 			    svg.append("text")
 		            .attr("x", width/2)
-		            .attr("y", 25)
+		            .attr("y", -margin.top/2)
 		            .attr("text-anchor", "middle")
 		            .style("font-size", "16px")
 		            .style("text-decoration", "underline")
@@ -144,7 +174,7 @@
 
 		        svg.append("text")
 		            .attr("x", width/2)
-		            .attr("y", 25)
+		            .attr("y", -margin.top/2)
 		            .attr("text-anchor", "middle")
 		            .style("font-size", "16px")
 		            .style("text-decoration", "underline")
@@ -159,13 +189,13 @@
 		        		.tickFormat("")
 		        	);
 
-		        svg.append("g")
-		        	.attr("class", "grid")
-		        	.style("stroke-dasharray", ("5, 3"))
-		        	.call(make_y_axis()
-		        		.tickSize(-width, 0, 0)
-		        		.tickFormat("")
-		        	);
+		        // svg.append("g")
+		        // 	.attr("class", "grid")
+		        // 	.style("stroke-dasharray", ("5, 3"))
+		        // 	.call(make_y_axis()
+		        // 		.tickSize(-width, 0, 0)
+		        // 		.tickFormat("")
+		        // 	);
 			});
 
 	</script>

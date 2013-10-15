@@ -1,0 +1,32 @@
+.chart rect {
+	stroke: white;
+	fill: steelblue;
+}
+
+.chart rect:hover {
+	fill: darkturquoise;
+}
+
+.chart text {
+	font:10px sans-serif;
+	fill: white;
+}
+
+.chart text.rule {
+	fill: black;
+}
+
+path {
+    stroke: steelblue;
+    stroke-width: 2;
+    fill: none;
+}
+ 
+line {
+    stroke: black;
+}
+ 
+text {
+    font-family: Arial;
+    font-size: 9pt;
+}

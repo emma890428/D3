@@ -42,12 +42,16 @@
 		</style>
 	</head>
 	<body>
+		<div id="option">
+			<input name="updateButton" type="button" value="Update" onClick="updateData()">
+		</div>
+
 		<script type="text/javascript" src="d3/d3.v3.js"></script>
 		<script type="text/javascript">
 			var margin = {
 				top: 30,
 				right: 50,
-				bottom: 30,
+				bottom: 40,
 				left: 50
 			},
 				width = 600 - margin.left - margin.right,
@@ -129,7 +133,7 @@
 				svg.append("g")
 					.attr("class", "x axis")
 					.attr("transform", "translate(0, " + height +")")
-					.call(xAxis);
+					.call(xAxis);					
 
 				svg.append("text")
 					.attr("transform","translate(" + (width/2) + ", " + (height + margin.bottom) +")")
@@ -159,7 +163,7 @@
 			    	.attr("transform", "rotate(90)")
 			    	.attr("x", (height/2))
 			    	.attr("y", (-width - margin.right/2))
-			    	.attr("dy", "-0.5em")
+			    	.attr("dy", "-1em")
 			    	.style("text-anchor", "middle")
 			    	.text("Open");
 
@@ -198,6 +202,44 @@
 		        // 	);
 			});
 
-	</script>
+			function updateData(){
+				// Get the data again
+				d3.tsv("data/data-alt.tsv", function(data){
+					data.forEach(function(d){
+						d.date = parseDate(d.date);
+						d.close = +d.close;
+					});
+
+					x.domain(d3.extent(data, function(d) {return d.date;}));
+					y0.domain([0, d3.max(data, function(d) {return d.close;})]);
+
+					// Select the selection we want to apply our changes to
+					var svg = d3.select("body").transition();
+
+					// Make the changes
+					svg.select(".line")
+						.duration(750)
+						.attr("d", valueline(data));
+
+					svg.select(".x.axis")
+						.duration(750)
+						.call(xAxis);
+
+					svg.select(".y.axis")
+						.duration(750)
+						.call(yAxisLeft);
+
+					svg.select(".grid")
+						.duration(750)
+						.call(make_x_axis()
+			        		.tickSize(-height, 0, 0)
+			        		.tickFormat("")
+			        	);
+
+				});
+
+
+			}
+		</script>
 	</body>
 </html>
